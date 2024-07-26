@@ -96,3 +96,8 @@ npm run dev:h5
 ├── tsconfig.json              # typescript 配置
 └── vite.config.ts             # vite 配置
 ```
+
+## me
+
+1. easycom: 组件自动注册
+2. @uni-helper/uni-ui-types: 为uni-ui组件提供类型声明
