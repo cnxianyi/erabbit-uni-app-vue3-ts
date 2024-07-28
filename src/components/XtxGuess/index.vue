@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { getHomeGoodsGuessLikeAPI } from '@/services/home'
 import { onMounted, ref } from 'vue'
-import type { PageResult } from '@/types/global'
 import type { GuessItem } from '@/types/home'
 
 const getHomeGoodsGuessLikeList = ref<GuessItem[]>([])
@@ -13,6 +12,11 @@ const getHomeGoodsGuessLikeData = async () => {
 
 onMounted(() => {
   getHomeGoodsGuessLikeData()
+})
+
+// 暴露加载更多方法
+defineExpose({
+  getMore: getHomeGoodsGuessLikeData,
 })
 </script>
 
