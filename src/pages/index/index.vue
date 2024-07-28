@@ -24,8 +24,9 @@ const getHomeCategory = async () => {
 const getHotPanelData = async () => {
   const res = await getHomeHotAPI()
   hotPanelList.value = res.result
-  console.log(res.result)
 }
+
+const onScrolltolower = () => {}
 
 onLoad(() => {
   getHomeBannerData()
@@ -35,17 +36,23 @@ onLoad(() => {
 </script>
 
 <template>
-  <view>
-    <CustomNavbar />
+  <CustomNavbar />
+  <scroll-view scroll-y class="scroll-view" @scrolltolower="onScrolltolower">
     <XtxSwiper :list="bannerList" />
     <CategoryPanel :list="categoryItemList" />
     <HotPanel :list="hotPanelList" />
-  </view>
+    <XtxGuess />
+  </scroll-view>
 </template>
 
 <style lang="scss">
-//
 page {
   background-color: #f7f7f7;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+.scroll-view {
+  flex: 1;
 }
 </style>
