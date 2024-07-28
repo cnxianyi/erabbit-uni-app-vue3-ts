@@ -34,9 +34,17 @@ onMounted(() => {
   getHomeGoodsGuessLikeData()
 })
 
-// 暴露加载更多方法
+// 重置方法
+const refreshData = () => {
+  pageParams.page = 1
+  pageParams.pageSize = 10
+  getHomeGoodsGuessLikeList.value = []
+  finish.value = false
+}
+// 暴露方法
 defineExpose({
   getMore: getHomeGoodsGuessLikeData,
+  refreshData,
 })
 </script>
 
