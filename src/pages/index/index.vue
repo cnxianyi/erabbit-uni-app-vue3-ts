@@ -29,7 +29,9 @@ const getHotPanelData = async () => {
 
 const guessRef = ref<XtxGuessInstance>()
 
-const onScrollTolower = () => {}
+const onScrollTolower = () => {
+  guessRef.value?.getMore()
+}
 
 onLoad(() => {
   getHomeBannerData()
