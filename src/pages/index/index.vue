@@ -33,10 +33,12 @@ const onScrollTolower = () => {
   guessRef.value?.getMore()
 }
 
+const isLoading = ref(true)
+
 onLoad(() => {
-  getHomeBannerData()
-  getHomeCategory()
-  getHotPanelData()
+  isLoading.value = true
+  Promise.all([getHomeBannerData(), getHomeCategory(), getHotPanelData()])
+  isLoading.value = false
 })
 
 // 下拉刷新
@@ -64,10 +66,13 @@ const onRefresherrefresh = async () => {
     @refresherrefresh="onRefresherrefresh"
     :refresher-triggered="isTrigger"
   >
-    <XtxSwiper :list="bannerList" />
-    <CategoryPanel :list="categoryItemList" />
-    <HotPanel :list="hotPanelList" />
-    <XtxGuess ref="guessRef" />
+    <Skeleton v-if="isLoading" />
+    <template v-else>
+      <XtxSwiper :list="bannerList" style="height: 280px" />
+      <CategoryPanel :list="categoryItemList" />
+      <HotPanel :list="hotPanelList" />
+      <XtxGuess ref="guessRef" />
+    </template>
   </scroll-view>
 </template>
 
