@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useGuessList } from '@/composables/index'
 import { useMemberStore } from '@/stores'
+import { onShow } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 
 // 获取屏幕边界到安全区域距离
@@ -15,7 +16,11 @@ const orderTypes = [
 
 const memberStore = useMemberStore()
 
-const userInfo = memberStore.profile
+let userInfo = ref(memberStore.profile)
+
+onShow(() => {
+  userInfo.value = memberStore.profile
+})
 
 const { guessRef, onScrollTolower } = useGuessList()
 </script>
