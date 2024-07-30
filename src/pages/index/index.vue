@@ -6,7 +6,7 @@ import HotPanel from './components/HotPanel.vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import type { BannerItem, CategoryItem, HotItem } from '@/types/home'
-import type { XtxGuessInstance } from '@/types/component'
+import { useGuessList } from '@/composables'
 
 const bannerList = ref<BannerItem[]>([])
 const categoryItemList = ref<CategoryItem[]>([])
@@ -27,12 +27,6 @@ const getHotPanelData = async () => {
   hotPanelList.value = res.result
 }
 
-const guessRef = ref<XtxGuessInstance>()
-
-const onScrollTolower = () => {
-  guessRef.value?.getMore()
-}
-
 const isLoading = ref(true)
 
 onLoad(() => {
@@ -40,6 +34,8 @@ onLoad(() => {
   Promise.all([getHomeBannerData(), getHomeCategory(), getHotPanelData()])
   isLoading.value = false
 })
+
+const { guessRef, onScrollTolower } = useGuessList()
 
 // 下拉刷新
 const isTrigger = ref(false)

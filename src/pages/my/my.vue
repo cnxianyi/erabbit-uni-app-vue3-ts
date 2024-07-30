@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { useGuessList } from '@/composables/index'
 import { useMemberStore } from '@/stores'
+import { ref } from 'vue'
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
@@ -14,10 +16,12 @@ const orderTypes = [
 const memberStore = useMemberStore()
 
 const userInfo = memberStore.profile
+
+const { guessRef, onScrollTolower } = useGuessList()
 </script>
 
 <template>
-  <scroll-view class="viewport" scroll-y enable-back-to-top>
+  <scroll-view class="viewport" scroll-y enable-back-to-top @scrolltolower="onScrollTolower">
     <!-- 个人资料 -->
     <view class="profile" :style="{ paddingTop: safeAreaInsets!.top + 'px' }">
       <!-- 情况1：已登录 -->
