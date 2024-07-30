@@ -10,7 +10,7 @@ export const getBannerAPI = (distributionSite = 1) => {
     method: 'GET',
     url: '/home/banner',
     data: {
-      distributionSite: 1,
+      distributionSite,
     },
   })
 }
