@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { postLoginWxMinAPI, postLoginWxMinSimpleAPI } from '@/services/login'
+import { useMemberStore } from '@/stores'
+import type { LoginResult } from '@/types/member'
 import { onLoad } from '@dcloudio/uni-app'
 
 // 获取 code 登录凭证
@@ -30,7 +32,20 @@ onLoad(async () => {
 const onDevGetphonenumber = async () => {
   const res = await postLoginWxMinSimpleAPI('17786367291')
   uni.showToast({ icon: 'none', title: '登录成功' })
-  console.log(res)
+  loginSuccess(res.result)
+}
+
+const loginSuccess = (value: LoginResult) => {
+  const memberStore = useMemberStore()
+  memberStore.setProfile(value)
+  uni.showToast({
+    title: '登陆成功',
+    icon: 'success',
+    mask: true,
+  })
+  setTimeout(() => {
+    uni.switchTab({ url: '/pages/my/my' })
+  }, 500)
 }
 </script>
 
