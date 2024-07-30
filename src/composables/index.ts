@@ -9,10 +9,10 @@ export const useGuessList = () => {
   const guessRef = ref<XtxGuessInstance>()
 
   // 滚动触底事件
-  const onScrolltolower = () => {
+  const onScrollTolower = () => {
     guessRef.value?.getMore()
   }
 
   // 返回 ref 和事件处理函数
-  return { guessRef, onScrolltolower }
+  return { guessRef, onScrollTolower }
 }

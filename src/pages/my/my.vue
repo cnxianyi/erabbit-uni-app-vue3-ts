@@ -54,7 +54,7 @@ const { guessRef, onScrollTolower } = useGuessList()
           </view>
         </view>
       </view>
-      <navigator class="settings" url="/pagesMember/settings/settings" hover-class="none">
+      <navigator class="settings" url="/pagesMember/setting/index" hover-class="none">
         设置
       </navigator>
     </view>
