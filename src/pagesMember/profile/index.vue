@@ -73,7 +73,6 @@ const changeProfile = async () => {
       profession: profileData.value.profession,
     })
   }
-  console.log(res)
   profileData.value = res.result
   memberStore.profile!.nickname = profileData.value.nickname
   uni.showToast({

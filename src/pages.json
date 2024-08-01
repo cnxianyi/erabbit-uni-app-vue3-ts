@@ -113,6 +113,15 @@
             "navigationStyle": "custom",
             "navigationBarTextStyle": "white"
           }
+        },
+        {
+          "path": "address/index",
+          "style": {
+            "navigationBarTitleText": "收货地址"
+          }
+        },
+        {
+          "path": "address-form/index"
         }
       ]
     }
