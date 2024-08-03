@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { getGoodsByIdAPI } from '@/services/goods'
 import type { GoodsResult } from '@/types/goods'
+import type {
+  SkuPopupEvent,
+  SkuPopupInstance,
+  SkuPopupLocaldata,
+} from '@/types/vk-data-goods-sku-popup.d'
 import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 
 import AddressPanel from './components/AddressPanel.vue'
 import ServicePanel from './components/ServicePanel.vue'
+import { postMemberCartAPI } from '@/services/cart'
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
 
@@ -15,10 +21,40 @@ const query = defineProps<{
 
 const goodsData = ref<GoodsResult>()
 
+// 初始化为SkuPopupLocaldata类型，避免数据为加载时无法打开
+const localdata = ref({} as SkuPopupLocaldata)
+
 const getGoodsData = async () => {
   const res = await getGoodsByIdAPI(query.id)
-  console.log(res)
+  console.log(res.result)
   goodsData.value = res.result
+
+  localdata.value = {
+    _id: query.id,
+    name: res.result.name,
+    goods_thumb: res.result.mainPictures[0],
+    spec_list: res.result.specs.map((item) => {
+      return {
+        name: item.name,
+        list: item.values,
+      }
+    }),
+    sku_list: res.result.skus.map((item) => {
+      return {
+        _id: item.id,
+        goods_id: res.result.id,
+        goods_name: res.result.name,
+        image: item.picture,
+        price: item.price * 100,
+        sku_name_arr: item.specs.map((i) => {
+          return i.valueName
+        }),
+        stock: item.inventory,
+      }
+    }),
+  }
+
+  console.log(localdata.value)
 }
 
 onLoad(() => {
@@ -51,6 +87,50 @@ const openPopup = (name: typeof popupName.value) => {
   popupName.value = name
   // 打开弹出层
   popup.value?.open()
+}
+
+const isShowSku = ref(false)
+
+const openSku = (method: number) => {
+  if (goodsData.value) {
+    isShowSku.value = false
+    isShowSku.value = true
+
+    mode.value = method
+  }
+}
+
+enum SkuMode {
+  Both = 1,
+  Cart = 2,
+  Buy = 3,
+}
+
+const mode = ref<SkuMode>(SkuMode.Cart)
+
+const skuPopupRef = ref<SkuPopupInstance>()
+
+// 商品规格
+const skuProduct = ref<string>('请选择商品规格')
+
+const closeSku = () => {
+  //   if (skuPopupRef.value?.selectArr![0]) {
+  //     skuProduct.value = skuPopupRef.value?.selectArr?.join(' ')
+  //   } else {
+  //     skuProduct.value = '请选择商品规格'
+  //   }
+  skuProduct.value = skuPopupRef.value?.selectArr?.join(' ').trim() || '请选择商品规格'
+}
+
+// 添加购物车
+const onAddCart = async (e: SkuPopupEvent) => {
+  const res = await postMemberCartAPI({
+    skuId: e._id,
+    count: e.buy_num,
+  })
+  console.log(res.result)
+  uni.showToast({ title: '添加成功' })
+  isShowSku.value = false
 }
 </script>
 
@@ -90,7 +170,7 @@ const openPopup = (name: typeof popupName.value) => {
       <view class="action">
         <view class="item arrow">
           <text class="label">选择</text>
-          <text class="text ellipsis"> 请选择商品规格 </text>
+          <text class="text ellipsis" @tap="openSku(SkuMode.Both)"> {{ skuProduct }} </text>
         </view>
         <view class="item arrow" @tap="openPopup('address')">
           <text class="label">送至</text>
@@ -156,6 +236,23 @@ const openPopup = (name: typeof popupName.value) => {
     </view>
   </scroll-view>
 
+  <!-- SKU弹窗组件 -->
+  <vk-data-goods-sku-popup
+    :mode="mode"
+    v-model="isShowSku"
+    :localdata="localdata"
+    add-cart-background-color="#ffa868"
+    buy-now-background-color="#27ba9b"
+    @close="closeSku"
+    ref="skuPopupRef"
+    :actived-style="{
+      color: '#27BA9B',
+      borderColor: '#27BA9B',
+      backgroundColor: '#E9F8F5',
+    }"
+    @add-cart="onAddCart"
+  />
+
   <!-- 用户操作 -->
   <view class="toolbar" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }">
     <view class="icons">
@@ -168,8 +265,8 @@ const openPopup = (name: typeof popupName.value) => {
       </navigator>
     </view>
     <view class="buttons">
-      <view class="addcart"> 加入购物车 </view>
-      <view class="buynow"> 立即购买 </view>
+      <view class="addcart" @tap="openSku(SkuMode.Cart)"> 加入购物车 </view>
+      <view class="buynow" @tap="openSku(SkuMode.Buy)"> 立即购买 </view>
     </view>
   </view>
 </template>
