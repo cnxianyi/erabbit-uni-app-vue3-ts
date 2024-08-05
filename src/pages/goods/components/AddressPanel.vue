@@ -1,8 +1,43 @@
 <script setup lang="ts">
+import { getMemberAddressAPI } from '@/services/address'
+import { useMemberStore } from '@/stores'
+import type { AddressItem } from '@/types/address'
+import { onLoad, onShow } from '@dcloudio/uni-app'
+import { computed, onMounted, ref } from 'vue'
+
 //
 const emit = defineEmits<{
   (event: 'close'): void
 }>()
+
+const locationList = ref<AddressItem[]>()
+
+const getMemberAddressData = async () => {
+  const res = await getMemberAddressAPI()
+  locationList.value = res.result
+}
+getMemberAddressData()
+
+const storeMember = useMemberStore()
+
+const check = computed(() => {
+  if (storeMember.location) {
+    return storeMember.location.id
+  }
+  if (locationList.value) {
+    for (const key in locationList.value) {
+      if (locationList.value[key].isDefault) {
+        return locationList.value[key].id
+      }
+    }
+  }
+  // 确保在没有找到默认地址时也返回一个值
+  return false
+})
+
+const onCheck = (item: AddressItem) => {
+  storeMember.setLocation(item)
+}
 </script>
 
 <template>
@@ -13,20 +48,10 @@ const emit = defineEmits<{
     <view class="title">配送至</view>
     <!-- 内容 -->
     <view class="content">
-      <view class="item">
-        <view class="user">李明 13824686868</view>
-        <view class="address">北京市顺义区后沙峪地区安平北街6号院</view>
-        <text class="icon icon-checked"></text>
-      </view>
-      <view class="item">
-        <view class="user">王东 13824686868</view>
-        <view class="address">北京市顺义区后沙峪地区安平北街6号院</view>
-        <text class="icon icon-ring"></text>
-      </view>
-      <view class="item">
-        <view class="user">张三 13824686868</view>
-        <view class="address">北京市朝阳区孙河安平北街6号院</view>
-        <text class="icon icon-ring"></text>
+      <view class="item" v-for="item in locationList" :key="item.id" @tap="onCheck(item)">
+        <view class="user">{{ item.receiver }} {{ item.contact }}</view>
+        <view class="address">{{ item.fullLocation }} {{ item.address }}</view>
+        <text :class="check === item.id ? 'icon icon-checked' : 'icon'"></text>
       </view>
     </view>
     <view class="footer">

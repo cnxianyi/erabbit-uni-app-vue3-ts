@@ -1,3 +1,4 @@
+import type { AddressItem } from '@/types/address'
 import type { LoginResult } from '@/types/member'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
@@ -19,11 +20,27 @@ export const useMemberStore = defineStore(
       profile.value = undefined
     }
 
+    // 收货地址
+    const location = ref<AddressItem>()
+
+    // 保存地址信息
+    const setLocation = (val: AddressItem) => {
+      location.value = val
+    }
+
+    // 清理地址信息
+    const clearLocation = () => {
+      location.value = undefined
+    }
+
     // 记得 return
     return {
       profile,
       setProfile,
       clearProfile,
+      location,
+      setLocation,
+      clearLocation,
     }
   },
   // TODO: 持久化

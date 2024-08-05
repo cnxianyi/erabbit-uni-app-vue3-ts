@@ -12,6 +12,7 @@ import { ref } from 'vue'
 import AddressPanel from './components/AddressPanel.vue'
 import ServicePanel from './components/ServicePanel.vue'
 import { postMemberCartAPI } from '@/services/cart'
+import { useMemberStore } from '@/stores'
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
 
@@ -132,6 +133,14 @@ const onAddCart = async (e: SkuPopupEvent) => {
   uni.showToast({ title: '添加成功' })
   isShowSku.value = false
 }
+
+const onByNow = (e: SkuPopupEvent) => {
+  uni.navigateTo({
+    url: `/pagesOrder/create/index?skuId=${e._id}&count=${e.buy_num}`,
+  })
+}
+
+const storeMember = useMemberStore()
 </script>
 
 <template>
@@ -174,7 +183,19 @@ const onAddCart = async (e: SkuPopupEvent) => {
         </view>
         <view class="item arrow" @tap="openPopup('address')">
           <text class="label">送至</text>
-          <text class="text ellipsis"> 请选择收获地址 </text>
+          <text class="text ellipsis">
+            {{
+              storeMember.location
+                ? storeMember.location.receiver +
+                  ' ' +
+                  storeMember.location.contact +
+                  ' ' +
+                  storeMember.location.fullLocation +
+                  ' ' +
+                  storeMember.location.address
+                : '请选择收获地址'
+            }}
+          </text>
         </view>
         <view class="item arrow" @tap="openPopup('service')">
           <text class="label">服务</text>
@@ -251,6 +272,7 @@ const onAddCart = async (e: SkuPopupEvent) => {
       backgroundColor: '#E9F8F5',
     }"
     @add-cart="onAddCart"
+    @buy-now="onByNow"
   />
 
   <!-- 用户操作 -->

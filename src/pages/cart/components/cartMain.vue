@@ -102,7 +102,7 @@ const changeAllSelect = () => {
 const gotoPayment = () => {
   if (allGoods.value) {
     // 跳转到结算页
-    uni.navigateTo({ url: '/pagesOrder/create/create' })
+    uni.navigateTo({ url: '/pagesOrder/create/index' })
   } else {
     return uni.showToast({
       icon: 'none',

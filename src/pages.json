@@ -130,11 +130,33 @@
           "path": "address-form/index"
         }
       ]
+    },
+    {
+      "root": "pagesOrder",
+      "pages": [
+        {
+          "path": "create/index",
+          "style": {
+            "navigationBarTitleText": "填写订单"
+          }
+        },
+        {
+          "path": "detail/index",
+          "style": {
+            "navigationBarTitleText": "订单详情",
+            "navigationStyle": "custom"
+          }
+        }
+      ]
     }
   ],
   "preloadRule": {
     "pages/my/my": {
       "packages": ["pagesMember"],
+      "network": "all"
+    },
+    "pages/cart/cart": {
+      "packages": ["pagesOrder"],
       "network": "all"
     }
   }
