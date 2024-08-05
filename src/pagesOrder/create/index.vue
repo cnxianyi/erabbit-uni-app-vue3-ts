@@ -1,6 +1,11 @@
 <script setup lang="ts">
 /* eslint-disable vue/return-in-computed-property */
-import { getMemberOrderPreAPI, getMemberOrderPreNowAPI, postMemberOrderAPI } from '@/services/order'
+import {
+  getMemberOrderPreAPI,
+  getMemberOrderPreNowAPI,
+  getMemberOrderRepurchaseByIdAPI,
+  postMemberOrderAPI,
+} from '@/services/order'
 import { useMemberStore } from '@/stores'
 import type { OrderCreateParams, OrderPreResult } from '@/types/order'
 import { onShow } from '@dcloudio/uni-app'
@@ -42,9 +47,17 @@ const getSinglePreList = async (skuId: string, count: string) => {
   console.log(res.result)
 }
 
+const getOrderPreList = async (orderId: string) => {
+  const res = await getMemberOrderRepurchaseByIdAPI(orderId)
+  preList.value = res.result
+  console.log(res.result)
+}
+
 onShow(() => {
   if (query.skuId) {
     getSinglePreList(query.skuId, query.count)
+  } else if (query.orderId) {
+    getOrderPreList(query.orderId)
   } else {
     getPreData()
   }
@@ -72,6 +85,7 @@ const location = computed(() => {
 const query = defineProps<{
   skuId: string
   count: string
+  orderId: string
 }>()
 
 const onSubmit = async () => {

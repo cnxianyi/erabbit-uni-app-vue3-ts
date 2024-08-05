@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { useGuessList } from '@/composables'
-import { onReady } from '@dcloudio/uni-app'
+import { OrderState, orderStateList } from '@/services/constants'
+import { getMemberOrderByIdAPI } from '@/services/order'
+import type { OrderResult } from '@/types/order'
+import { onLoad, onReady } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 
 // 获取屏幕边界到安全区域距离
@@ -63,6 +66,22 @@ onReady(() => {
     endScrollOffset: 50,
   })
 })
+
+const detailList = ref<OrderResult>()
+
+const getDetailData = async () => {
+  const res = await getMemberOrderByIdAPI(query.id)
+  detailList.value = res.result
+  console.log(res.result)
+}
+
+onLoad(() => {
+  getDetailData()
+})
+
+const onTimeup = () => {
+  detailList.value!.orderState = OrderState.YiQuXiao
+}
 </script>
 
 <template>
@@ -84,23 +103,30 @@ onReady(() => {
       <!-- 订单状态 -->
       <view class="overview" :style="{ paddingTop: safeAreaInsets!.top + 20 + 'px' }">
         <!-- 待付款状态:展示去支付按钮和倒计时 -->
-        <template v-if="true">
+        <template v-if="detailList?.orderState === OrderState.DaiFuKuan">
           <view class="status icon-clock">等待付款</view>
           <view class="tips">
-            <text class="money">应付金额: ¥ 99.00</text>
+            <text class="money">应付金额: ¥ {{ detailList?.payMoney }}</text>
             <text class="time">支付剩余</text>
-            00 时 29 分 59 秒
+            <uni-countdown
+              :second="detailList.countdown"
+              color="#fff"
+              splitor-color="#fff"
+              :show-day="false"
+              :show-colon="false"
+              @timeup="onTimeup"
+            />
           </view>
           <view class="button">去支付</view>
         </template>
         <!-- 其他订单状态:展示再次购买按钮 -->
         <template v-else>
           <!-- 订单状态文字 -->
-          <view class="status"> 待付款 </view>
+          <view class="status"> {{ orderStateList[detailList!.orderState].text }} </view>
           <view class="button-group">
             <navigator
               class="button"
-              :url="`/pagesOrder/create/create?orderId=${query.id}`"
+              :url="`/pagesOrder/create/index?orderId=${query.id}`"
               hover-class="none"
             >
               再次购买
@@ -121,8 +147,10 @@ onReady(() => {
         </view>
         <!-- 用户收货地址 -->
         <view class="locate">
-          <view class="user"> 张三 13333333333 </view>
-          <view class="address"> 广东省 广州市 天河区 黑马程序员 </view>
+          <view class="user">
+            {{ detailList?.receiverContact }} {{ detailList?.receiverMobile }}
+          </view>
+          <view class="address"> {{ detailList?.receiverAddress }} </view>
         </view>
       </view>
 
@@ -131,25 +159,22 @@ onReady(() => {
         <view class="item">
           <navigator
             class="navigator"
-            v-for="item in 2"
-            :key="item"
+            v-for="item in detailList?.skus"
+            :key="item.spuId"
             :url="`/pages/goods/goods?id=${item}`"
             hover-class="none"
           >
-            <image
-              class="cover"
-              src="https://yanxuan-item.nosdn.127.net/c07edde1047fa1bd0b795bed136c2bb2.jpg"
-            ></image>
+            <image class="cover" :src="item.image"></image>
             <view class="meta">
-              <view class="name ellipsis">ins风小碎花泡泡袖衬110-160cm</view>
-              <view class="type">藏青小花， 130</view>
+              <view class="name ellipsis">{{ item.name }}</view>
+              <view class="type">{{ item.attrsText }}</view>
               <view class="price">
                 <view class="actual">
                   <text class="symbol">¥</text>
-                  <text>99.00</text>
+                  <text>{{ item.curPrice }}</text>
                 </view>
               </view>
-              <view class="quantity">x1</view>
+              <view class="quantity">x{{ item.quantity }}</view>
             </view>
           </navigator>
           <!-- 待评价状态:展示按钮 -->
@@ -162,15 +187,15 @@ onReady(() => {
         <view class="total">
           <view class="row">
             <view class="text">商品总价: </view>
-            <view class="symbol">99.00</view>
+            <view class="symbol">{{ detailList?.totalMoney }}</view>
           </view>
           <view class="row">
             <view class="text">运费: </view>
-            <view class="symbol">10.00</view>
+            <view class="symbol">{{ detailList?.postFee }}</view>
           </view>
           <view class="row">
             <view class="text">应付金额: </view>
-            <view class="symbol primary">109.00</view>
+            <view class="symbol primary">{{ detailList?.payMoney }}</view>
           </view>
         </view>
       </view>
@@ -182,7 +207,7 @@ onReady(() => {
           <view class="item">
             订单编号: {{ query.id }} <text class="copy" @tap="onCopy(query.id)">复制</text>
           </view>
-          <view class="item">下单时间: 2023-04-14 13:14:20</view>
+          <view class="item">下单时间: {{ detailList?.createTime }}</view>
         </view>
       </view>
 
