@@ -44,7 +44,8 @@ const loginSuccess = (value: LoginResult) => {
     mask: true,
   })
   setTimeout(() => {
-    uni.switchTab({ url: '/pages/my/my' })
+    // uni.switchTab({ url: '/pages/my/my' })
+    uni.navigateBack()
   }, 500)
 }
 </script>
