@@ -2,6 +2,7 @@
 import { useGuessList } from '@/composables'
 import { OrderState, orderStateList } from '@/services/constants'
 import { getMemberOrderByIdAPI } from '@/services/order'
+import { getPayWxPayMiniPayAPI } from '@/services/pay'
 import type { OrderResult } from '@/types/order'
 import { onLoad, onReady } from '@dcloudio/uni-app'
 import { ref } from 'vue'
@@ -82,6 +83,11 @@ onLoad(() => {
 const onTimeup = () => {
   detailList.value!.orderState = OrderState.YiQuXiao
 }
+
+const onPay = async () => {
+  const res = await getPayWxPayMiniPayAPI({ orderId: query.id })
+  await wx.requestPayment(res.result)
+}
 </script>
 
 <template>
@@ -117,7 +123,7 @@ const onTimeup = () => {
               @timeup="onTimeup"
             />
           </view>
-          <view class="button">去支付</view>
+          <view class="button" @tap="onPay">去支付</view>
         </template>
         <!-- 其他订单状态:展示再次购买按钮 -->
         <template v-else>
