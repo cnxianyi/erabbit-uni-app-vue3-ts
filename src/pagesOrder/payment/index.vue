@@ -7,11 +7,11 @@ const query = defineProps<{
 }>()
 
 // 猜你喜欢
-const { guessRef, onScrolltolower } = useGuessList()
+const { guessRef, onScrollTolower } = useGuessList()
 </script>
 
 <template>
-  <scroll-view class="viewport" scroll-y @scrolltolower="onScrolltolower">
+  <scroll-view class="viewport" scroll-y @scrolltolower="onScrollTolower">
     <!-- 订单状态 -->
     <view class="overview">
       <view class="status icon-checked">支付成功</view>
@@ -27,7 +27,7 @@ const { guessRef, onScrolltolower } = useGuessList()
         <navigator
           hover-class="none"
           class="button navigator"
-          :url="`/pagesOrder/detail/detail?id=${query.id}`"
+          :url="`/pagesOrder/detail/index?id=${query.id}`"
           open-type="redirect"
         >
           查看订单

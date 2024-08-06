@@ -2,7 +2,13 @@
 import { useGuessList } from '@/composables'
 import { OrderState, orderStateList } from '@/services/constants'
 import { getMemberOrderByIdAPI } from '@/services/order'
-import { getPayWxPayMiniPayAPI } from '@/services/pay'
+import {
+  getPayWxPayMiniPayAPI,
+  getPayMockAPI,
+  getMemberOrderConsignmentByIdAPI,
+  putMemberOrderReceiptByIdAPI,
+  deleteMemberOrderAPI,
+} from '@/services/pay'
 import type { OrderResult } from '@/types/order'
 import { onLoad, onReady } from '@dcloudio/uni-app'
 import { ref } from 'vue'
@@ -85,8 +91,58 @@ const onTimeup = () => {
 }
 
 const onPay = async () => {
-  const res = await getPayWxPayMiniPayAPI({ orderId: query.id })
-  await wx.requestPayment(res.result)
+  // 通过环境变量区分开发环境
+  if (import.meta.env.DEV) {
+    // 开发环境：模拟支付，修改订单状态为已支付
+    await getPayMockAPI({ orderId: query.id })
+  } else {
+    // 生产环境：获取支付参数 + 发起微信支付
+    const res = await getPayWxPayMiniPayAPI({ orderId: query.id })
+    await wx.requestPayment(res.result)
+  }
+  // 关闭当前页，再跳转支付结果页
+  uni.redirectTo({ url: `/pagesOrder/payment/index?id=${query.id}` })
+}
+
+// 是否为开发环境
+const isDev = import.meta.env.DEV
+
+const moNiFaHuo = async () => {
+  if (isDev) {
+    await getMemberOrderConsignmentByIdAPI(query.id)
+    uni.showToast({ icon: 'success', title: '模拟发货完成' })
+    // 主动更新订单状态
+    detailList.value!.orderState = OrderState.DaiShouHuo
+  }
+}
+
+const moNiShouHuo = async () => {
+  if (isDev) {
+    uni.showModal({
+      content: '为保障您的权益，请收到货并确认无误后，再确认收货',
+      success: async (success) => {
+        if (success.confirm) {
+          const res = await putMemberOrderReceiptByIdAPI(query.id)
+          // 更新订单状态
+          detailList.value = res.result
+        }
+      },
+    })
+  }
+}
+
+const moNiShanChu = async () => {
+  if (isDev) {
+    uni.showModal({
+      content: '为保障您的权益，请收到货并确认无误后，再确认收货',
+      success: async (success) => {
+        if (success.confirm) {
+          const res = await deleteMemberOrderAPI({ ids: [query.id] })
+          uni.redirectTo({ url: `/pagesOrder/list/index` })
+        }
+      },
+    })
+  }
 }
 </script>
 
@@ -138,7 +194,20 @@ const onPay = async () => {
               再次购买
             </navigator>
             <!-- 待发货状态：模拟发货,开发期间使用,用于修改订单状态为已发货 -->
-            <view v-if="false" class="button"> 模拟发货 </view>
+            <view
+              v-if="OrderState.DaiFaHuo === detailList?.orderState"
+              @tap="moNiFaHuo"
+              class="button"
+            >
+              模拟发货
+            </view>
+            <view
+              v-if="OrderState.DaiShouHuo === detailList?.orderState"
+              @tap="moNiShouHuo"
+              class="button"
+            >
+              确认收货
+            </view>
           </view>
         </template>
       </view>
@@ -224,8 +293,8 @@ const onPay = async () => {
       <view class="toolbar-height" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }"></view>
       <view class="toolbar" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }">
         <!-- 待付款状态:展示支付按钮 -->
-        <template v-if="true">
-          <view class="button primary"> 去支付 </view>
+        <template v-if="detailList?.orderState === OrderState.DaiFuKuan">
+          <view class="button primary" @tap="onPay"> 去支付 </view>
           <view class="button" @tap="popup?.open?.()"> 取消订单 </view>
         </template>
         <!-- 其他订单状态:按需展示按钮 -->
@@ -238,11 +307,29 @@ const onPay = async () => {
             再次购买
           </navigator>
           <!-- 待收货状态: 展示确认收货 -->
-          <view class="button primary"> 确认收货 </view>
+          <view
+            class="button primary"
+            @tap="moNiShouHuo"
+            v-if="detailList?.orderState === OrderState.DaiShouHuo"
+          >
+            确认收货
+          </view>
           <!-- 待评价状态: 展示去评价 -->
-          <view class="button"> 去评价 </view>
+          <view class="button" v-if="detailList?.orderState === OrderState.DaiPingJia">
+            去评价
+          </view>
           <!-- 待评价/已完成/已取消 状态: 展示删除订单 -->
-          <view class="button delete"> 删除订单 </view>
+          <view
+            class="button delete"
+            v-if="
+              detailList?.orderState === OrderState.YiWanCheng ||
+              detailList?.orderState === OrderState.YiQuXiao ||
+              detailList?.orderState === OrderState.DaiPingJia
+            "
+            @tap="moNiShanChu"
+          >
+            删除订单
+          </view>
         </template>
       </view>
     </template>
